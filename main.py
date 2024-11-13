@@ -7,6 +7,7 @@ from sqlalchemy.future import select
 
 from pitch_desk.database import Pitch, SessionLocal, init_db
 from pitch_desk.transcriber import Transcriber
+from docs.pitch_indices import pitch_indices
 
 app = FastAPI()
 
@@ -19,7 +20,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 class PitchRequest(BaseModel):
     slide_no: int
     audio_seq_no: int
-    audio_url: str
+    audio_base64: str
+    text_content: str
 
 
 @app.websocket("/ws/pitch")
@@ -32,7 +34,7 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
 
     async def stream_audio():
         nonlocal current_audio_index
-        stmt = select(Pitch).order_by(Pitch.slide_no, Pitch.audio_seq_no)
+        stmt = select(Pitch).order_by(Pitch.audio_seq_no)
         result = await db.execute(stmt)
         pitches = result.scalars().all()
 
@@ -44,7 +46,7 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
             await websocket.send_json(
                 {
                     "event": "media",
-                    "media": {"payload": pitch.audio_url, "mark": audio_mark},
+                    "media": {"payload": pitch.audio_base64, "mark": audio_mark},
                 }
             )
 
@@ -78,9 +80,12 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
 
                     await websocket.send_json({"event": "clear"})
 
-                    transcription_service.set_pitch_content(
-                        "Pitch content goes here"
-                    )  # Set the pitch content
+                    pitch_content = ""
+                    if interrupted_audio_seq is not None:
+                        for index in range(1, interrupted_audio_seq):
+                            pitch_content += pitch_indices.get(str(index), "") + " "
+
+                    transcription_service.set_pitch_content(pitch_content.strip())
                     response_audio = await transcription_service.send(audio_data)
 
                     await websocket.send_json(
@@ -107,7 +112,8 @@ async def save_pitch(pitch: PitchRequest, db: AsyncSession = Depends(get_db)):
         pitch_data = {
             "slide_no": pitch.slide_no,
             "audio_seq_no": pitch.audio_seq_no,
-            "audio_url": pitch.audio_url,
+            "audio_base64": pitch.audio_base64,
+            "text_content": pitch.text_content,
         }
         saved_pitch = await Pitch.save_pitch(db, pitch_data)
         return {"message": "Pitch saved successfully", "pitch_id": saved_pitch.id}

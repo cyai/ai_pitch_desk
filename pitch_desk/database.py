@@ -5,7 +5,12 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-DATABASE_URL = "mysql+aiomysql://root:your_password@localhost/your_database"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 Base = declarative_base()
 engine = create_async_engine(DATABASE_URL, echo=True)
@@ -16,8 +21,10 @@ class Pitch(Base):
     __tablename__ = "pitches"
     id = Column(Integer, primary_key=True, index=True)
     slide_no = Column(Integer, nullable=False)
+    text_content = Column(String, nullable=False)
     audio_seq_no = Column(Integer, nullable=False)
-    audio_url = Column(String(255), nullable=False)
+    # audio_url = Column(String(255), nullable=False)
+    audio_base64 = Column(String, nullable=False)
 
     @classmethod
     async def save_pitch(cls, db_session: AsyncSession, pitch_data):
