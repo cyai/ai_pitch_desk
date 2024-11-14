@@ -60,6 +60,7 @@ def update_json_with_audio_times():
         "27.mp3",
         "28.mp3",
         "29.mp3",
+        "30.mp3",
     ]
     current_time = 0
     for audio_file in audio_files:

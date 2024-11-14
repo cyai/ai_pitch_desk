@@ -67,6 +67,9 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
             if interrupted_event.is_set():
                 break
 
+        asyncio.sleep(2)
+        await websocket.send_json({"event": "end"})
+
     interrupted_event = asyncio.Event()
 
     try:

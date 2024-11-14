@@ -3,9 +3,7 @@ import base64
 import asyncio
 import requests
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from pitch_desk.database import SessionLocal
 from docs.pitch_indices import pitch_indices
 
 load_dotenv()
@@ -16,7 +14,7 @@ FIXED_SLIDE_NO = 1  # Set a fixed slide number for all entries
 headers = {"Content-Type": "application/json", "xi-api-key": ELEVENLABS_API_KEY}
 
 
-async def generate_and_save_audio(audio_seq_no, text_content, session: AsyncSession):
+async def generate_and_save_audio(audio_seq_no, text_content):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}/with-timestamps"
 
     data = {
@@ -44,10 +42,10 @@ async def generate_and_save_audio(audio_seq_no, text_content, session: AsyncSess
 
 
 async def generate_audio():
-    async with SessionLocal() as session:
-        for audio_seq_no, text_content in pitch_indices.items():
-            print(f"Generating audio for audio sequence {audio_seq_no}")
-            await generate_and_save_audio(int(audio_seq_no), text_content, session)
+
+    for audio_seq_no, text_content in pitch_indices.items():
+        print(f"Generating audio for audio sequence {audio_seq_no}")
+        await generate_and_save_audio(int(audio_seq_no), text_content)
 
 
 if __name__ == "__main__":
