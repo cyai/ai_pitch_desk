@@ -77,6 +77,19 @@
 }
 ```
 
+#### 5. `end` Event (Response)
+
+-   **Description**: Indicates that the pitch audio stream has ended.
+-   **Payload**: None
+
+**Response example**:
+
+```json
+{
+    "event": "end"
+}
+```
+
 ### WebSocket Flow
 
 1. **Client sends `start` event** to begin streaming.
