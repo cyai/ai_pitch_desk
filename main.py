@@ -6,12 +6,17 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depe
 from sqlalchemy.future import select
 from alembic.config import Config
 from alembic import command
+import json
 
 from pitch_desk.database import Pitch, SessionLocal, init_db
 from pitch_desk.transcriber import Transcriber
 from docs.pitch_indices import pitch_indices
 
 app = FastAPI()
+
+
+with open("docs/pitch_indices.json", "r") as f:
+    json_pitch_indices = json.load(f)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -43,19 +48,17 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
 
     async def stream_audio():
         nonlocal current_audio_index
-        stmt = select(Pitch).order_by(Pitch.audio_seq_no)
-        result = await db.execute(stmt)
-        pitches = result.scalars().all()
+        pitches = sorted(json_pitch_indices.items(), key=lambda x: int(x[0]))
 
         while current_audio_index < len(pitches):
-            pitch = pitches[current_audio_index]
-            audio_mark = pitch.audio_seq_no
+            audio_seq_no, pitch = pitches[current_audio_index]
+            audio_mark = int(audio_seq_no)
             audio_marks_sent.append(audio_mark)
 
             await websocket.send_json(
                 {
                     "event": "media",
-                    "media": {"payload": pitch.audio_base64, "mark": audio_mark},
+                    "media": {"payload": pitch["audio_base64"], "mark": audio_mark},
                 }
             )
 
