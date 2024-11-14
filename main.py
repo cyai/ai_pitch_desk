@@ -1,16 +1,15 @@
+import json
 import asyncio
+from alembic import command
 from pydantic import BaseModel
+from alembic.config import Config
 from typing import AsyncGenerator, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
-from sqlalchemy.future import select
-from alembic.config import Config
-from alembic import command
-import json
 
-from pitch_desk.database import Pitch, SessionLocal, init_db
-from pitch_desk.transcriber import Transcriber
 from docs.pitch_indices import pitch_indices
+from pitch_desk.transcriber import Transcriber
+from pitch_desk.database import Pitch, SessionLocal, init_db
 
 app = FastAPI()
 

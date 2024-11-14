@@ -1,8 +1,7 @@
-# models.py
-from sqlalchemy import Column, Integer, String, Float, Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Float, Text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 import os

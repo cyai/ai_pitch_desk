@@ -1,13 +1,11 @@
-import requests
-import json
+import os
 import base64
 import asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+import requests
 from dotenv import load_dotenv
-import os
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from pitch_desk.database import Pitch, SessionLocal, init_db
+from pitch_desk.database import SessionLocal
 from docs.pitch_indices import pitch_indices
 
 load_dotenv()
