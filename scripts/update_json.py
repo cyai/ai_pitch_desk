@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 from pydub import AudioSegment
 
 audio_dir = "audio"
@@ -19,6 +20,11 @@ def load_json(json_file):
 def save_json(json_file, data):
     with open(json_file, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def get_audio_base64(audio_path):
+    with open(audio_path, "rb") as audio_file:
+        return base64.b64encode(audio_file.read()).decode("utf-8")
 
 
 def update_json_with_audio_times():
@@ -62,9 +68,11 @@ def update_json_with_audio_times():
         if audio_id in data:
             audio_path = os.path.join(audio_dir, audio_file)
             audio_duration = get_audio_duration(audio_path)
+            audio_base64 = get_audio_base64(audio_path)
 
             data[audio_id]["time_start"] = current_time
             data[audio_id]["time_end"] = current_time + audio_duration
+            data[audio_id]["audio_base64"] = audio_base64
 
             current_time += audio_duration
 
