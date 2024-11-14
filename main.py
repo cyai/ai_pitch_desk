@@ -4,6 +4,8 @@ from typing import AsyncGenerator, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends
 from sqlalchemy.future import select
+from alembic.config import Config
+from alembic import command
 
 from pitch_desk.database import Pitch, SessionLocal, init_db
 from pitch_desk.transcriber import Transcriber
@@ -20,8 +22,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 class PitchRequest(BaseModel):
     slide_no: int
     audio_seq_no: int
-    audio_base64: str
+    audio_url: str
+    start_time: float
+    end_time: float
     text_content: str
+
+
+async def apply_migrations():
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
 
 
 @app.websocket("/ws/pitch")
@@ -112,7 +121,9 @@ async def save_pitch(pitch: PitchRequest, db: AsyncSession = Depends(get_db)):
         pitch_data = {
             "slide_no": pitch.slide_no,
             "audio_seq_no": pitch.audio_seq_no,
-            "audio_base64": pitch.audio_base64,
+            "audio_url": pitch.audio_url,
+            "start_time": pitch.start_time,
+            "end_time": pitch.end_time,
             "text_content": pitch.text_content,
         }
         saved_pitch = await Pitch.save_pitch(db, pitch_data)
@@ -123,21 +134,13 @@ async def save_pitch(pitch: PitchRequest, db: AsyncSession = Depends(get_db)):
         )
 
 
-# MySQL Table Structure
-# CREATE TABLE pitches (
-#    id INT PRIMARY KEY AUTO_INCREMENT,
-#    slide_no INT,
-#    audio_seq_no INT,
-#    audio_url VARCHAR(255)
-# );
-
-
 if __name__ == "__main__":
     import uvicorn
     import asyncio
 
     async def main():
         await init_db()
+        asyncio.run(apply_migrations())
         uvicorn.run(app, host="0.0.0.0", port=8000)
 
     asyncio.run(main())

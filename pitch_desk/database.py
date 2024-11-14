@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
@@ -21,10 +21,11 @@ class Pitch(Base):
     __tablename__ = "pitches"
     id = Column(Integer, primary_key=True, index=True)
     slide_no = Column(Integer, nullable=False)
-    text_content = Column(String, nullable=False)
+    text_content = Column(Text, nullable=False)
     audio_seq_no = Column(Integer, nullable=False)
-    # audio_url = Column(String(255), nullable=False)
-    audio_base64 = Column(String, nullable=False)
+    start_time = Column(Float, nullable=False)
+    end_time = Column(Float, nullable=False)
+    audio_url = Column(Text, nullable=False)
 
     @classmethod
     async def save_pitch(cls, db_session: AsyncSession, pitch_data):
