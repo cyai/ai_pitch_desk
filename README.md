@@ -1,17 +1,3 @@
-### TODO:
-
--   Set `.env`:
-
-    -   OPENAI_API_KEY
-    -   DEEPGRAM_API_KEY
-    -   XI_API_KEY
-    -   VOICE_ID
-    -   XI_MODEL_ID
-    -   DATABASE_URL
-
--   Prompt Better
--   Add `pitch.py` to handle pitch sentence and index
-
 ### WebSocket Endpoint
 
 -   **URL**: `/ws/pitch`
