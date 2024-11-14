@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from pitch_desk.prompt import system_prompt
 from pitch_desk.tts import XILabsTTS
+from pitch_desk.tools import TOOLS
 
 load_dotenv()
 
@@ -30,6 +31,7 @@ class LLMService:
                     "content": user_input,
                 },
             ],
+            tools=TOOLS,
         )
 
         return self.tts.generate(response)
