@@ -45,6 +45,8 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
 
     transcription_service = Transcriber()
 
+    interrupted_event = asyncio.Event()
+
     async def stream_audio():
         nonlocal current_audio_index
         pitches = sorted(json_pitch_indices.items(), key=lambda x: int(x[0]))
@@ -70,8 +72,6 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
         asyncio.sleep(2)
         await websocket.send_json({"event": "end"})
 
-    interrupted_event = asyncio.Event()
-
     try:
         while True:
             data = await websocket.receive_json()
@@ -86,9 +86,10 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
                 if audio_data:
                     interrupted_event.set()  # Mark that the streaming was interrupted
                     # Take note of the audio sequence that got interrupted
-                    interrupted_audio_seq = (
-                        audio_marks_sent[-1] if audio_marks_sent else None
-                    )
+                    # interrupted_audio_seq = (
+                    #     audio_marks_sent[-1] if audio_marks_sent else None
+                    # )
+                    interrupted_audio_seq = current_audio_index
                     print(f"Interrupted audio seq: {interrupted_audio_seq}")
                     current_audio_index -= 1
 
